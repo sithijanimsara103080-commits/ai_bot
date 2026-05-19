@@ -1,14 +1,14 @@
 {
   "version": 2,
-  "frameworks": ["vite"],
-  "routes": [
+  "framework": "vite",
+  "rewrites": [
     {
-      "src": "/src/entry-server.tsx",
-      "dest": "/api/index.js"
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "/"
+      "source": "/(.*)",
+      "destination": "/"
     }
   ]
 }
