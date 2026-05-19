@@ -8,7 +8,7 @@ export default async function (req, res) {
     body: req.method === 'GET' || req.method === 'HEAD' ? null : req,
   });
 
-  const response = await handler(request);
+  const response = await handler.fetch(request);
   res.status(response.status);
   response.headers.forEach((value, name) => {
     res.setHeader(name, value);
