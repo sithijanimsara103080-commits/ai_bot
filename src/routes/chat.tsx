@@ -277,7 +277,8 @@ function MessageList({ msgs, sending, isTyping, onComplete, onScroll }: MessageL
     <div className="max-w-3xl mx-auto px-3 sm:px-4 py-6 space-y-5">
       {msgs.map((m, i) => {
         const isAssistant = m.role === "assistant";
-        const animate = isAssistant && i === msgs.length - 1;
+        // Only animate the very last assistant message if it was JUST added (sending state just finished)
+        const animate = isAssistant && i === msgs.length - 1 && isTyping;
         return (
           <div key={i} className={`flex gap-2.5 ${m.role === "user" ? "justify-end" : ""}`}>
             {isAssistant && (
@@ -371,7 +372,8 @@ function ChatPage() {
   useEffect(() => {
     const list = loadConvs();
     setConvs(list);
-    setActiveId(list[0]?.id ?? null);
+    // Modified: Default to null (new chat) every time the page is entered/reloaded
+    setActiveId(null);
     setGuestCount(parseInt(localStorage.getItem("astro_guest_count") || "0", 10));
   }, []);
 
@@ -412,7 +414,14 @@ function ChatPage() {
   const send = useCallback(async (text: string) => {
     const content = text.trim();
     if ((!content && !selectedFile) || sending || isTyping) return;
-    if (!user && isGuest && guestCount >= GUEST_LIMIT) { setShowLimit(true); return; }
+
+    // Limits check - Only for guests
+    if (!user && isGuest) {
+      if (guestCount >= GUEST_LIMIT) {
+        setShowLimit(true);
+        return;
+      }
+    }
 
     const fileSnap = selectedFile;
     setInput(""); setSelectedFile(null); setSending(true);
@@ -501,7 +510,7 @@ function ChatPage() {
     mode, setMode, sending, isGuestView, onSend: send,
     onFileChange: handleFileChange, textareaRef, fileInputRef,
     showGuestFileTooltip, setShowGuestFileTooltip,
-  isTyping,
+    isTyping,
   };
 
   // ── GUEST VIEW ────────────────────────────────────────────────────────────

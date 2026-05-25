@@ -86,12 +86,28 @@ function LoginPage() {
   };
 
   const withProvider = async (provider: typeof googleProvider | typeof githubProvider, name: string) => {
-    setErr(""); setLoadingProvider(name);
+    setErr("");
+    setLoadingProvider(name);
     try {
-      await signInWithPopup(auth, provider);
-      next();
+      // Small timeout to check if popup is even opening
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        next();
+      }
     } catch (e: any) {
-      setErr(friendlyError(e.message || "Sign-in failed."));
+      console.error("[Login] Auth error:", e);
+      let message = e.message || "Sign-in failed.";
+
+      // Handle blocked popups explicitly
+      if (e.code === "auth/popup-blocked") {
+        message = "Login popup was blocked by your browser. Please allow popups for this site and try again.";
+      } else if (e.code === "auth/cancelled-popup-request") {
+        message = "Login was cancelled or another popup was already open.";
+      } else if (e.code === "auth/network-request-failed") {
+        message = "Network error. Please check your internet connection.";
+      }
+
+      setErr(friendlyError(message));
     } finally {
       setLoadingProvider(null);
     }

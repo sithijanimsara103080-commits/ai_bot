@@ -8,9 +8,10 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth-context";
+import { Orbit } from "lucide-react";
 
 function NotFoundComponent() {
   return (
@@ -83,6 +84,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "icon", href: "/Favorite%20Icon.ico", type: "image/x-icon" },
+      { rel: "manifest", href: "/site.webmanifest" },
+      { name: "theme-color", content: "#0ea5e9" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { rel: "stylesheet", href: appCss },
       {
         rel: "preconnect",
@@ -126,6 +131,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ThemeSync />
+        <PWAInstallManager />
         <Outlet />
       </AuthProvider>
     </QueryClientProvider>
@@ -147,4 +153,69 @@ function ThemeSync() {
     return () => window.removeEventListener("astro-theme", handler);
   }, []);
   return null;
+}
+
+function PWAInstallManager() {
+  useEffect(() => {
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+          console.log('SW registered:', reg);
+        }).catch(err => {
+          console.log('SW failed:', err);
+        });
+      });
+    }
+
+    const handler = (e: any) => {
+      e.preventDefault();
+      (window as any).deferredPrompt = e;
+      window.dispatchEvent(new CustomEvent('pwa-installable'));
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  return <InstallButton />;
+}
+
+function InstallButton() {
+  const [canInstall, setCanInstall] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    const check = () => {
+      setIsStandalone(window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone);
+      setCanInstall(!!(window as any).deferredPrompt);
+    };
+    check();
+    window.addEventListener('pwa-installable', check);
+    window.addEventListener('appinstalled', () => setCanInstall(false));
+    return () => window.removeEventListener('pwa-installable', check);
+  }, []);
+
+  const handleInstall = async () => {
+    const prompt = (window as any).deferredPrompt;
+    if (!prompt) return;
+    prompt.prompt();
+    const { outcome } = await prompt.userChoice;
+    if (outcome === 'accepted') (window as any).deferredPrompt = null;
+    setCanInstall(false);
+  };
+
+  if (isStandalone || !canInstall) return null;
+
+  return (
+    <div className="fixed bottom-20 right-6 z-50 animate-bounce-subtle">
+      <button
+        onClick={handleInstall}
+        className="flex items-center gap-2 bg-primary text-white px-5 py-3 rounded-2xl shadow-2xl hover:scale-105 active:scale-95 transition-all font-semibold text-sm border-2 border-white/20"
+      >
+        <Orbit className="h-5 w-5" />
+        Download App
+      </button>
+    </div>
+  );
 }

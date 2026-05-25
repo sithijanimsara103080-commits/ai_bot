@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline — Mission Astro AI</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: radial-gradient(circle at center, #020617 0%, #000000 100%);
+            color: white;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            text-align: center;
+        }
+        .icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            animation: float 3s ease-in-out infinite;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+        p {
+            font-size: 16px;
+            color: #94a3b8;
+            max-width: 300px;
+            line-height: 1.6;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .btn {
+            margin-top: 32px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <div class="icon">🚀</div>
+    <h1>Lost in Space?</h1>
+    <p>You're currently offline. Please check your internet connection to continue your mission.</p>
+    <button onclick="window.location.reload()" class="btn">Try Re-connecting</button>
+</body>
+</html>
